@@ -61,9 +61,119 @@ router.get('/logout', (req, res) => {
 });
 
 // Roblox API endpoints (avatar, user info, game info, etc.)
-router.get('/api/fetch-avatar/:userId', async (req, res) => { /* ...same code... */ });
-router.get('/api/fetch-user-info/:userId', async (req, res) => { /* ...same code... */ });
-router.post('/api/fetch-user-id', async (req, res) => { /* ...same code... */ });
-router.get('/api/fetch-game-info/:placeId', async (req, res) => { /* ...same code... */ });
+router.get('/api/fetch-avatar/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid or missing userId' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot`, {
+        params: {
+          userIds: userId,
+          size: '150x150',
+          format: 'Png',
+          isCircular: true
+        }
+      }
+    );
+
+    const avatarData = response.data?.data?.[0];
+    if (avatarData?.imageUrl) {
+      res.json({ imageUrl: avatarData.imageUrl });
+    } else {
+      res.status(404).json({ error: 'Avatar not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching avatar:', error.message);
+    res.status(500).json({ error: 'Failed to fetch avatar' });
+  }
+});
+
+router.get('/api/fetch-game-info/:placeId', async (req, res) => {
+  const placeId = req.params.placeId;
+
+  if (!placeId || isNaN(placeId)) {
+    return res.status(400).json({ error: 'Invalid or missing placeId' });
+  }
+
+  try {
+
+    const universeIdResponse = await axios.get(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`);
+    const universeId = universeIdResponse.data?.universeId;
+
+    const response = await axios.get(`https://games.roblox.com/v1/games?universeIds=${universeId}`, {
+      params: { placeId }
+    });
+
+    const gameData = response.data?.data?.[0];
+
+    if (!gameData) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    const { name, creator, playing, visits, maxPlayers, created, updated, description } = gameData;
+
+    res.json({
+      name,
+      description: description || 'No description available',
+      creatorName: creator?.name,
+      creatorType: creator?.type,
+      playing,
+      visits,
+      maxPlayers,
+      created,
+      updated,
+
+    });
+  } catch (error) {
+    console.error('Error fetching game info:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch game info' });
+  }
+});
+
+router.get('/api/fetch-user-info/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid or missing userId' });
+  }
+
+  try {
+    const response = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+
+    const { name: username, displayName } = response.data;
+    res.json({ username, displayName });
+  } catch (error) {
+    console.error('Error fetching user info:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch user info' });
+  }
+});
+
+router.post('/api/fetch-user-id', async (req, res) => {
+  const { username } = req.body;
+
+  if (!username || typeof username !== 'string') {
+    return res.status(400).json({ error: 'Username is required and must be a string' });
+  }
+
+  try {
+    const response = await axios.post('https://users.roblox.com/v1/usernames/users', {
+      usernames: [username],
+      excludeBannedUsers: false,
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const userId = response.data?.data?.[0]?.id || null;
+
+    res.json({ userId });
+  } catch (error) {
+    console.error('Error fetching user ID:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch user ID' });
+  }
+});
 
 module.exports = router;
