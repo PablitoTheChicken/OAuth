@@ -68,7 +68,11 @@ app.get('/api/fetch-game-info/:placeId', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`https://games.roblox.com/v1/games`, {
+
+    const universeIdResponse = await axios.get(`https://apis.roblox.com/universes/v1/places/${placeId}/universe`);
+    const universeId = universeIdResponse.data?.universeId;
+
+    const response = await axios.get(`https://games.roblox.com/v1/games?universeIds=${universeId}`, {
       params: { placeId }
     });
 
