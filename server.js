@@ -16,7 +16,7 @@ const crypto   = require('crypto');
 const CLIENT_ID     = process.env.ROBLOX_CLIENT_ID     || '2502928924991748390';
 const CLIENT_SECRET = process.env.ROBLOX_CLIENT_SECRET || 'RBX-bf1Hc1QNDkWZfpWCeSRUvgwFhsaJv0Mej-QfVuFboHcUILqdCkvUmvWoOUs89G3I';
 const REDIRECT_URI  = process.env.ROBLOX_REDIRECT_URI  || 'https://cahoots.gg/auth/roblox/callback';
-const PORT          = process.env.PORT || 80;
+const PORT          = process.env.PORT || 3000;
 
 const app = express();
 app.use(session({
