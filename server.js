@@ -60,6 +60,24 @@ app.get('/api/fetch-avatar/:userId', async (req, res) => {
   }
 });
 
+app.get('/api/fetch-user-info/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid or missing userId' });
+  }
+
+  try {
+    const response = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+
+    const { name: username, displayName } = response.data;
+    res.json({ username, displayName });
+  } catch (error) {
+    console.error('Error fetching user info:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch user info' });
+  }
+});
+
 app.post('/api/fetch-user-id', async (req, res) => {
   const { username } = req.body;
 
