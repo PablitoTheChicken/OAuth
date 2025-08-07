@@ -60,6 +60,42 @@ app.get('/api/fetch-avatar/:userId', async (req, res) => {
   }
 });
 
+app.get('/api/fetch-game-info/:placeId', async (req, res) => {
+  const placeId = req.params.placeId;
+
+  if (!placeId || isNaN(placeId)) {
+    return res.status(400).json({ error: 'Invalid or missing placeId' });
+  }
+
+  try {
+    const response = await axios.get(`https://games.roblox.com/v1/games`, {
+      params: { placeId }
+    });
+
+    const gameData = response.data?.data?.[0];
+
+    if (!gameData) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    const { name, creator, playing, visits, maxPlayers, created, updated } = gameData;
+
+    res.json({
+      name,
+      creatorName: creator?.name,
+      creatorType: creator?.type,
+      playing,
+      visits,
+      maxPlayers,
+      created,
+      updated
+    });
+  } catch (error) {
+    console.error('Error fetching game info:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch game info' });
+  }
+});
+
 app.get('/api/fetch-user-info/:userId', async (req, res) => {
   const userId = req.params.userId;
 
