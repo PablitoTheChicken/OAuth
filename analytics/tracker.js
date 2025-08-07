@@ -163,6 +163,7 @@ async function recordData(universeId) {
     // Compute like ratio: percentage of upvotes out of total votes
     const totalVotes = upVotes + downVotes;
     const likeRatio = totalVotes > 0 ? (upVotes / totalVotes) * 100 : 0;
+    const likeRatioGrowth = last ? computeGrowth(likeRatio, last.likeRatio) : 0;
     // Estimate session time in minutes based on the difference in visits and players
     let sessionTimeEstimate = 0;
     if (last) {
@@ -184,6 +185,7 @@ async function recordData(universeId) {
       likeRatio,
       visitsGrowth,
       playingGrowth,
+      likeRatioGrowth,
       sessionTimeEstimate,
     };
     data.push(sample);
