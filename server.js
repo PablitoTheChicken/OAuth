@@ -82,17 +82,19 @@ app.get('/api/fetch-game-info/:placeId', async (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    const { name, creator, playing, visits, maxPlayers, created, updated } = gameData;
+    const { name, creator, playing, visits, maxPlayers, created, updated, description } = gameData;
 
     res.json({
       name,
+      description: description || 'No description available',
       creatorName: creator?.name,
       creatorType: creator?.type,
       playing,
       visits,
       maxPlayers,
       created,
-      updated
+      updated,
+
     });
   } catch (error) {
     console.error('Error fetching game info:', error.response?.data || error.message);
