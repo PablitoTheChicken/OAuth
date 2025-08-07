@@ -19,6 +19,7 @@ const credentials = { key: privateKey, cert: certificate };
 
 // === Express App Setup ===
 const app = express();
+app.use(express.json());
 app.use(session({
   secret: 'roblox-oauth-example',
   resave: false,
@@ -26,6 +27,30 @@ app.use(session({
 }));
 
 // === Routes ===
+app.post('/api/fetch-user-id', async (req, res) => {
+  const { username } = req.body;
+
+  if (!username || typeof username !== 'string') {
+    return res.status(400).json({ error: 'Username is required and must be a string' });
+  }
+
+  try {
+    const response = await axios.post('https://users.roblox.com/v1/usernames/users', {
+      usernames: [username],
+      excludeBannedUsers: false,
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const userId = response.data?.data?.[0]?.id || null;
+
+    res.json({ userId });
+  } catch (error) {
+    console.error('Error fetching user ID:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to fetch user ID' });
+  }
+});
+
 app.get('/', (req, res) => {
   const user = req.session.user;
   if (!user) {
