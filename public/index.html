@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roblox Game Analytics</title>
+  <!-- Use Chart.js from a CDN to render graphs on the client.  Chart.js is
+       loaded asynchronously so that the rest of the page can render even
+       if the CDN is slow. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Roblox Game Analytics Tracker</h1>
+    <p>
+      This dashboard displays live analytics for the Roblox games you’ve
+      configured in <code>config.js</code>.  Data is collected periodically
+      and stored locally; the graphs below visualise the history of visits
+      and concurrent players, along with the percentage growth between
+      successive samples.
+    </p>
+  </header>
+
+  <main>
+    <label for="gameSelect">Select a game (universe ID): </label>
+    <select id="gameSelect"></select>
+
+    <div class="chart-container">
+      <h2>Visits over time</h2>
+      <canvas id="visitsChart" aria-label="Visits chart" role="img"></canvas>
+    </div>
+    <div class="chart-container">
+      <h2>Concurrent players over time</h2>
+      <canvas id="playingChart" aria-label="Concurrent players chart" role="img"></canvas>
+    </div>
+    <div class="chart-container">
+      <h2>Visits growth (%) between samples</h2>
+      <canvas id="visitsGrowthChart" aria-label="Visits growth chart" role="img"></canvas>
+    </div>
+    <div class="chart-container">
+      <h2>Concurrent players growth (%) between samples</h2>
+      <canvas id="playingGrowthChart" aria-label="Concurrent players growth chart" role="img"></canvas>
+    </div>
+  </main>
+
+  <footer>
+    <p>
+      Data is polled from Roblox’s Games API using the endpoint documented on
+      the developer forum【698823226887793†L118-L125】 and recorded on your server.  Growth
+      percentages are calculated relative to the previous sample.
+    </p>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>
