@@ -36,6 +36,8 @@ const cors = require('cors');
 const universeIds = new Set(require('./config').universeIds);
 const fetchIntervalMinutes = require('./config').fetchIntervalMinutes;
 
+const timers = new Map();
+
 const DATA_DIR = path.join(__dirname, 'data');
 const API_URL = 'https://games.roblox.com/v1/games?universeIds=';
 
