@@ -32,14 +32,18 @@ router.get('/api/data', async (_req, res) => {
 
 router.get('/api/data/:id', async (req, res) => {
   const id = Number(req.params.id);
-  if (!universeIds.includes(id)) return res.status(404).json({ error: `Universe ${id} not tracked.` });
+  if (!universeIds.has(id)) {
+    return res.status(404).json({ error: `Universe ${id} not tracked.` });
+  }
   const data = await loadData(id);
   res.json(data);
 });
 
 router.get('/api/growth/:id', async (req, res) => {
   const id = Number(req.params.id);
-  if (!universeIds.includes(id)) return res.status(404).json({ error: `Universe ${id} not tracked.` });
+  if (!universeIds.has(id)) {
+    return res.status(404).json({ error: `Universe ${id} not tracked.` });
+  }
   const data = await loadData(id);
   res.json(data.map(entry => ({
     timestamp: entry.timestamp,
