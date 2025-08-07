@@ -69,7 +69,8 @@ async function fetchGameData(universeId) {
   }
   const visits = typeof game.visits === 'number' ? game.visits : 0;
   const playing = typeof game.playing === 'number' ? game.playing : 0;
-  return { visits, playing };
+  const favorites = typeof game.favoritedCount === 'number' ? game.favoritedCount : 0;
+  return { visits, playing, favorites };
 }
 
 /**
@@ -164,6 +165,9 @@ async function recordData(universeId) {
     const totalVotes = upVotes + downVotes;
     const likeRatio = totalVotes > 0 ? (upVotes / totalVotes) * 100 : 0;
     const likeRatioGrowth = last ? computeGrowth(likeRatio, last.likeRatio) : 0;
+
+    const favorites = last ? last.favorites : 0; // Use previous favorites if available
+    const favoritesGrowth = last ? computeGrowth(favorites, last.favorites) : 0;
     // Estimate session time in minutes based on the difference in visits and players
     let sessionTimeEstimate = 0;
     if (last) {
@@ -176,6 +180,12 @@ async function recordData(universeId) {
         sessionTimeEstimate = (avgPlayers * minutesDiff) / newVisits;
       }
     }
+
+    const avgSessionTime =
+  data.length > 0
+    ? (data.reduce((sum, s) => sum + (s.sessionTimeEstimate ?? 0), 0) + sessionTimeEstimate) / (data.length + 1)
+    : sessionTimeEstimate;
+
     const sample = {
       timestamp: now,
       visits,
@@ -187,6 +197,9 @@ async function recordData(universeId) {
       playingGrowth,
       likeRatioGrowth,
       sessionTimeEstimate,
+      avgSessionTime,
+      favorites,
+      favoritesGrowth
     };
     data.push(sample);
     await saveData(universeId, data);
