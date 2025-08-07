@@ -153,7 +153,7 @@ function computeGrowth(current, previous) {
  */
 async function recordData(universeId) {
   try {
-    const { visits, playing } = await fetchGameData(universeId);
+    const { visits, playing, favorites } = await fetchGameData(universeId);
     const { upVotes, downVotes } = await fetchGameVotes(universeId);
     const now = new Date().toISOString();
     const data = await loadData(universeId);
@@ -165,8 +165,7 @@ async function recordData(universeId) {
     const totalVotes = upVotes + downVotes;
     const likeRatio = totalVotes > 0 ? (upVotes / totalVotes) * 100 : 0;
     const likeRatioGrowth = last ? computeGrowth(likeRatio, last.likeRatio) : 0;
-
-    const favorites = last ? last.favorites : 0; // Use previous favorites if available
+    
     const favoritesGrowth = last ? computeGrowth(favorites, last.favorites) : 0;
     // Estimate session time in minutes based on the difference in visits and players
     let sessionTimeEstimate = 0;
