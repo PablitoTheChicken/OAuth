@@ -33,7 +33,8 @@ const fs = require('fs/promises');
 const path = require('path');
 const cors = require('cors');
 
-const { universeIds, fetchIntervalMinutes } = require('./config');
+const universeIds = new Set(require('./config').universeIds);
+const fetchIntervalMinutes = require('./config').fetchIntervalMinutes;
 
 const DATA_DIR = path.join(__dirname, 'data');
 const API_URL = 'https://games.roblox.com/v1/games?universeIds=';
@@ -194,6 +195,15 @@ async function recordData(universeId) {
   }
 }
 
+async function beginTracking(universeId) {
+  if (timers.has(universeId)) return; // already tracking
+  universeIds.add(universeId);
+  await recordData(universeId);
+  const interval = setInterval(() => recordData(universeId), fetchIntervalMinutes * 60 * 1000);
+  timers.set(universeId, interval);
+  console.log(`🔁 Started tracking universe ${universeId}`);
+}
+
 /**
  * Start the periodic polling for each universe ID defined in config.js.
  * The initial call is made immediately on startup and then repeated
@@ -203,16 +213,17 @@ async function recordData(universeId) {
 async function startTracking() {
   await ensureDataDir();
   for (const id of universeIds) {
-    // Perform an initial fetch immediately
-    await recordData(id);
-    // Schedule subsequent polling
-    setInterval(() => {
-      recordData(id);
-    }, fetchIntervalMinutes * 60 * 1000);
+    await beginTracking(id);
   }
 }
 
 // Kick off tracking.  If the initial call fails, it still sets up
 // the Express server; errors are logged but won’t halt execution.
-startTracking().catch((err) => console.error('Failed to start tracking:', err));
-module.exports = { loadData };
+module.exports = {
+  universeIds,
+  loadData,
+  beginTracking,
+  startTracking
+};
+
+startTracking().catch(console.error);
