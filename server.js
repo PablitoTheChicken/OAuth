@@ -19,6 +19,11 @@ const certificate = fs.readFileSync('/etc/letsencrypt/live/cahoots.gg/fullchain.
 const credentials = { key: privateKey, cert: certificate };
 
 // === Express App Setup ===
+const allowedOrigins = [
+  'https://preview--rcoollab.lovable.app',
+  'https://cahoots.gg'
+];
+
 const app = express();
 app.use(express.json());
 app.use(cors({
