@@ -5,6 +5,7 @@ const qs = require('querystring');
 const crypto = require('crypto');
 const https = require('https');
 const fs = require('fs');
+const cors = require('cors');
 
 // === Configuration ===
 const CLIENT_ID     = process.env.ROBLOX_CLIENT_ID     || '2502928924991748390';
@@ -20,6 +21,11 @@ const credentials = { key: privateKey, cert: certificate };
 // === Express App Setup ===
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(session({
   secret: 'roblox-oauth-example',
   resave: false,
