@@ -1,6 +1,5 @@
 const express = require('express');
-const { universeIds } = require('../analytics/config');
-const { loadData } = require('../analytics/tracker');
+const { universeIds, loadData, beginTracking } = require('../analytics/tracker');
 
 const router = express.Router();
 
