@@ -29,6 +29,37 @@ app.use(session({
 }));
 
 // === Routes ===
+app.get('/api/fetch-avatar/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid or missing userId' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://thumbnails.roblox.com/v1/users/avatar-headshot`, {
+        params: {
+          userIds: userId,
+          size: '150x150',
+          format: 'Png',
+          isCircular: true
+        }
+      }
+    );
+
+    const avatarData = response.data?.data?.[0];
+    if (avatarData?.imageUrl) {
+      res.json({ imageUrl: avatarData.imageUrl });
+    } else {
+      res.status(404).json({ error: 'Avatar not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching avatar:', error.message);
+    res.status(500).json({ error: 'Failed to fetch avatar' });
+  }
+});
+
 app.post('/api/fetch-user-id', async (req, res) => {
   const { username } = req.body;
 
