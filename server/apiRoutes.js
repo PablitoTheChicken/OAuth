@@ -118,6 +118,7 @@ router.get('/api/fetch-game-info/:placeId', async (req, res) => {
 
     res.json({
       name,
+      universeId,
       description: description || 'No description available',
       creatorName: creator?.name,
       creatorType: creator?.type,
