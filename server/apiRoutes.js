@@ -114,6 +114,14 @@ router.get('/api/fetch-game-info/:placeId', async (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
+        const voteResponse = await axios.get(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`);
+    const voteData = voteResponse.data?.data?.[universeId];
+
+    const upVotes = voteData?.upVotes || 0;
+    const downVotes = voteData?.downVotes || 0;
+    const totalVotes = upVotes + downVotes;
+    const likeRatio = totalVotes > 0 ? (upVotes / totalVotes) * 100 : null;
+
     const { name, creator, playing, visits, maxPlayers, created, updated, description } = gameData;
 
     res.json({
@@ -124,6 +132,7 @@ router.get('/api/fetch-game-info/:placeId', async (req, res) => {
       creatorType: creator?.type,
       playing,
       visits,
+      likeRatio: likeRatio !== null ? parseFloat(likeRatio.toFixed(1)) : null,
       maxPlayers,
       created,
       updated,
