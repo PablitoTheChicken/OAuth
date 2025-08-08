@@ -6,7 +6,7 @@ const qs = require('querystring');
 const router = express.Router();
 
 const CLIENT_ID     = process.env.ROBLOX_CLIENT_ID     || '2502928924991748390';
-const CLIENT_SECRET = process.env.ROBLOX_CLIENT_SECRET || 'RBX-bf1Hc1QNDkWZfpWCeSRUvgwFhsaJv0Mej-QfVuFboHcUILqdCkvUmvWoOUs89G3I';
+const CLIENT_SECRET = process.env.ROBLOX_CLIENT_SECRET || 'RBX-bf1Hc1QNDkWZfpWCeSRUvuwB-JdjgBYzny_xX_Wnb-y4PcDVwjYu3BnP8tr6-ixQ';
 const REDIRECT_URI  = 'https://cahoots.gg/auth/roblox/callback';
 
 router.get('/', (req, res) => {
