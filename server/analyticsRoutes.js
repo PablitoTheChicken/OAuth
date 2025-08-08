@@ -41,7 +41,15 @@ router.get('/api/data/:id', async (req, res) => {
 
   if (start || end) {
     const startTime = start ? new Date(start).getTime() : 0;
-    const endTime = end ? new Date(end).getTime() : Date.now();
+    let endTime;
+if (end) {
+  const endDate = new Date(end);
+  endDate.setHours(23, 59, 59, 999); // Extend to end of day
+  endTime = endDate.getTime();
+} else {
+  endTime = Date.now();
+}
+
 
     if (isNaN(startTime) || isNaN(endTime)) {
       return res.status(400).json({ error: 'Invalid start or end date format' });
