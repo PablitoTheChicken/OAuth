@@ -115,7 +115,7 @@ router.get('/api/fetch-game-info/:placeId', async (req, res) => {
     }
 
         const voteResponse = await axios.get(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`);
-    const voteData = voteResponse.data?.data?.[universeId];
+    const voteData = voteResponse.data?.[0];
 
     const upVotes = voteData?.upVotes || 0;
     const downVotes = voteData?.downVotes || 0;
