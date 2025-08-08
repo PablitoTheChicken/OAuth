@@ -144,6 +144,8 @@ router.get('/api/fetch-game-info/:placeId', async (req, res) => {
   }
 });
 
+
+
 router.get('/api/fetch-user-info/:userId', async (req, res) => {
   const userId = req.params.userId;
 
@@ -154,8 +156,8 @@ router.get('/api/fetch-user-info/:userId', async (req, res) => {
   try {
     const response = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
 
-    const { name: username, displayName } = response.data;
-    res.json({ username, displayName });
+    const { name: username, displayName, hasVerifiedBadge } = response.data;
+    res.json({ username, displayName, hasVerifiedBadge });
   } catch (error) {
     console.error('Error fetching user info:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to fetch user info' });
