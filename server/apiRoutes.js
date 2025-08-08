@@ -157,7 +157,7 @@ router.get('/api/fetch-user-info/:userId', async (req, res) => {
     const response = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
 
     const { name: username, displayName, hasVerifiedBadge } = response.data;
-    res.json({ username, displayName, hasVerifiedBadge: true });
+    res.json({ username, displayName, hasVerifiedBadge });
   } catch (error) {
     console.error('Error fetching user info:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to fetch user info' });
