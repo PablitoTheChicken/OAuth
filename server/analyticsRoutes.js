@@ -35,9 +35,27 @@ router.get('/api/data/:id', async (req, res) => {
   if (!universeIds.has(id)) {
     return res.status(404).json({ error: `Universe ${id} not tracked.` });
   }
-  const data = await loadData(id);
 
-  // ⏳ Filter to only include last 7 days
+  const data = await loadData(id);
+  const { start, end } = req.query;
+
+  if (start || end) {
+    const startTime = start ? new Date(start).getTime() : 0;
+    const endTime = end ? new Date(end).getTime() : Date.now();
+
+    if (isNaN(startTime) || isNaN(endTime)) {
+      return res.status(400).json({ error: 'Invalid start or end date format' });
+    }
+
+    const filtered = data.filter(entry => {
+      const entryTime = new Date(entry.timestamp).getTime();
+      return entryTime >= startTime && entryTime <= endTime;
+    });
+
+    return res.json(filtered);
+  }
+
+  // Default: return last 7 days
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const recentData = data.filter(entry => new Date(entry.timestamp).getTime() >= sevenDaysAgo);
 
