@@ -49,7 +49,7 @@ router.get('/auth/callback', async (req, res) => {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     req.session.user = userRes.data;
-    res.redirect('https://preview--forrealdashboard.lovable.app/');
+    res.redirect('/');
   } catch (err) {
     console.error('OAuth error:', err.response?.data || err.message);
     res.status(500).send('OAuth failed');
