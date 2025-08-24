@@ -26,7 +26,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
 app.use('/', require('./apiRoutes'));
-app.use('/', require('./analyticsRoutes'));
 
 // Start HTTPS server
 const PORT = 443;
