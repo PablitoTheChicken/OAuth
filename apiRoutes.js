@@ -9,29 +9,36 @@ const CLIENT_ID     = '3474497565457328901';
 const CLIENT_SECRET = 'RBX-_N5_uqSbjkOOsU33KQOQm9_97UVrea_Pmlbqbhhqjc_CVUTkjzWh6tuglli_dMB7';
 const REDIRECT_URI  = 'https://cahoots.gg/auth/callback';
 
-router.get('/', (req, res) => {
-  const user = req.session.user;
-  if (!user) {
-    res.send(`<html><body><h1>Roblox OAuth</h1><a href="/auth">Log in with Roblox</a></body></html>`);
-  } else {
-    res.send(`<html><body><h1>Welcome, ${user.preferred_username}</h1><img src="${user.picture || ''}" style="border-radius:50%"><p>ID: ${user.sub}</p><a href="/logout">Log out</a></body></html>`);
-  }
-});
-
-router.get('/auth', (req, res) => {
+router.get('/auth/', (req, res) => {
   const state = crypto.randomBytes(16).toString('hex');
   req.session.oauthState = state;
+
   const scopes = encodeURIComponent('openid profile');
-  const authorizeUrl = `https://apis.roblox.com/oauth/v1/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${scopes}&state=${state}`;
+  const authorizeUrl = `https://apis.roblox.com/oauth/v1/authorize?client_id=${CLIENT_ID}`
+    + `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+    + `&response_type=code`
+    + `&scope=${scopes}`
+    + `&state=${state}`;
+
   res.redirect(authorizeUrl);
 });
 
+// Step 2: Handle callback and exchange code for tokens
 router.get('/auth/callback', async (req, res) => {
   const { code, state } = req.query;
-  if (!state || state !== req.session.oauthState) return res.status(400).send('Invalid state');
+
+  // Validate state to prevent CSRF
+  if (!state || state !== req.session.oauthState) {
+    return res.status(400).send('Invalid state parameter');
+  }
   delete req.session.oauthState;
-  if (!code) return res.status(400).send('Missing code');
+
+  if (!code) {
+    return res.status(400).send('Missing authorization code');
+  }
+
   try {
+    // Exchange authorization code for tokens
     const tokenRes = await axios.post(
       'https://apis.roblox.com/oauth/v1/token',
       qs.stringify({
@@ -43,22 +50,56 @@ router.get('/auth/callback', async (req, res) => {
       }),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    const accessToken = tokenRes.data.access_token;
-    req.session.accessToken = accessToken;
-    const userRes = await axios.get('https://apis.roblox.com/oauth/v1/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
+
+    const { access_token, refresh_token, id_token, expires_in, token_type, scope } = tokenRes.data;
+    req.session.accessToken = access_token;
+    req.session.refreshToken = refresh_token;
+
+    // Use the access token to fetch user info
+    const userInfoRes = await axios.get(
+      'https://apis.roblox.com/oauth/v1/userinfo',
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+    req.session.user = userInfoRes.data;
+
+    res.json({
+      tokens: { access_token, refresh_token, id_token, expires_in, token_type, scope },
+      user: userInfoRes.data
     });
-    req.session.user = userRes.data;
-    res.redirect('/');
   } catch (err) {
-    console.error('OAuth error:', err.response?.data || err.message);
-    res.status(500).send('OAuth failed');
+    console.error('Token exchange error:', err.response?.data || err.message);
+    res.status(500).send('Failed to retrieve tokens');
   }
 });
 
-router.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/'));
-});
+// Step 3 (optional): Refresh tokens
+router.get('/auth/refresh', async (req, res) => {
+  const refreshToken = req.session.refreshToken;
+  if (!refreshToken) {
+    return res.status(400).send('No refresh token available');
+  }
 
+  try {
+    const tokenRes = await axios.post(
+      'https://apis.roblox.com/oauth/v1/token',
+      qs.stringify({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET
+      }),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+
+    const { access_token, refresh_token, expires_in, token_type, scope } = tokenRes.data;
+    req.session.accessToken  = access_token;
+    req.session.refreshToken = refresh_token;
+
+    res.json({ access_token, refresh_token, expires_in, token_type, scope });
+  } catch (err) {
+    console.error('Refresh error:', err.response?.data || err.message);
+    res.status(500).send('Failed to refresh token');
+  }
+});
 
 module.exports = router;
