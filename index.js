@@ -4,7 +4,6 @@ const https = require('https');
 const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
 
 // TLS certs
 const privateKey  = fs.readFileSync('/etc/letsencrypt/live/cahoots.gg/privkey.pem', 'utf8');
