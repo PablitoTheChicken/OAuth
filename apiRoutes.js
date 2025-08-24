@@ -7,7 +7,7 @@ const router = express.Router();
 
 const CLIENT_ID     = '3474497565457328901';
 const CLIENT_SECRET = 'RBX-_N5_uqSbjkOOsU33KQOQm9_97UVrea_Pmlbqbhhqjc_CVUTkjzWh6tuglli_dMB7';
-const REDIRECT_URI  = 'https://cahoots.gg/auth/callback';
+const REDIRECT_URI  = 'https://forrealdashboard.lovable.app/auth/callback';
 
 router.get('/auth/', (req, res) => {
   const state = crypto.randomBytes(16).toString('hex');
