@@ -72,6 +72,7 @@ router.get('/auth/callback', async (req, res) => {
   }
 });
 
+
 // Step 3 (optional): Refresh tokens
 router.get('/auth/refresh', async (req, res) => {
   const refreshToken = req.session.refreshToken;
@@ -99,6 +100,15 @@ router.get('/auth/refresh', async (req, res) => {
   } catch (err) {
     console.error('Refresh error:', err.response?.data || err.message);
     res.status(500).send('Failed to refresh token');
+  }
+});
+
+// Step 4: Get current authenticated user
+router.get('/auth/me', (req, res) => {
+  if (req.session && req.session.user) {
+    res.json({ user: req.session.user });
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
   }
 });
 
