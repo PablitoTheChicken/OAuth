@@ -12,7 +12,10 @@ const credentials = { key: privateKey, cert: certificate };
 
 // Express app
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://forrealdashboard.lovable.app',
+  credentials: true
+}));
 app.use(express.json());
 app.use(session({
   secret: 'roblox-oauth-example',
