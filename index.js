@@ -17,10 +17,15 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.set('trust proxy', 1); // if behind a reverse proxy (like Vercel, Heroku, or Lovable)
 app.use(session({
   secret: 'roblox-oauth-example',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: {
+    secure: true,      // force HTTPS
+    sameSite: 'lax'    // or 'none' if you’re doing cross-domain OAuth
+  }
 }));
 
 // Static dashboard
