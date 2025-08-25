@@ -13,7 +13,7 @@ const credentials = { key: privateKey, cert: certificate };
 // Express app
 const app = express();
 app.use(cors({
-  origin: 'https://dashboard.forreal.games/',
+  origin: 'https://dashboard.forreal.games',
   credentials: true
 }));
 app.use(express.json());
