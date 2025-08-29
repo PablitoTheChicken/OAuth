@@ -7,7 +7,7 @@ const express = require("express");
 const path = require("path");
 const multer = require("multer");
 
-const upload = multer({ dest: "uploads/" }); // temporary upload folder
+const upload = multer({ dest: "uploads/" });
 const router = express.Router();
 
 const ALLOWED_USER_IDS = [764674203, 726882757, 127757949, 285095062, 155441001, 7041083189];
@@ -64,17 +64,6 @@ function hybridDecrypt(encrypted) {
   ]);
 
   return plaintext.toString();
-}
-
-
-async function getCsrfToken(COOKIE) {
-  try {
-    await axios.post("https://data.roblox.com/Data/Upload.ashx", "", {
-      headers: { Cookie: ".ROBLOSECURITY = ${ COOKIE }" },
-    });
-  } catch (e) {
-    return e.response.headers["x-csrf-token"];
-  }
 }
 
 router.get("/download/:assetId", async (req, res) => {
@@ -162,7 +151,7 @@ router.get("/assets", async (req, res) => {
 });
 
 router.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "editor", "index.html"));
 });
 
 router.post("/upload", upload.single("file"), async (req, res) => {
@@ -184,7 +173,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
   try {
     await noblox.setCookie(decCookie);
-    const token = await getCsrfToken(decCookie);
 
     const response = await noblox.uploadModel(
       fs.readFileSync(filePath),
