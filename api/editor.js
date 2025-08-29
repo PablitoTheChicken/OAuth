@@ -4,9 +4,7 @@ const crypto = require("crypto");
 const { execFile } = require("child_process");
 const noblox = require("noblox.js");
 const express = require("express");
-const multer = require("multer");
 const path = require("path");
-const cors = require("cors");
 
 const router = express.Router();
 
