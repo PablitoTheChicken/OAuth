@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ForReal</title>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css" />
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background-color: #1e1e1e;
+            color: #ddd;
+        }
+
+#assetSelect {
+    width: 100%;
+    padding: 6px 8px;
+    background-color: #1e1e1e;
+    color: #ddd;
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-sizing: border-box;
+    appearance: none;
+    margin-bottom: 10px; /* Adds spacing below the dropdown */
+}
+
+
+
+        #explorer {
+            width: 25%;
+            background: #2d2d2d;
+            padding: 10px;
+            overflow-y: auto;
+            border-right: 1px solid #444;
+            box-sizing: border-box;
+        }
+
+        #editor {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+    min-height: 0;
+        }
+
+        .folder,
+        .instance {
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            transition: background 0.2s;
+        }
+
+        .folder:hover,
+        .instance:hover {
+            background: #3d3d3d;
+        }
+
+        .arrow {
+            display: inline-block;
+            width: 10px;
+            margin-right: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .folder.open>.arrow {
+            transform: rotate(90deg);
+        }
+
+        .children {
+            margin-left: 15px;
+            display: none;
+            width: 100%;
+        }
+
+        .folder.open>.children {
+            display: block;
+        }
+
+        input[type="file"],
+        #searchInput,
+        #textSearchInput {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #555;
+            background-color: #1e1e1e;
+            color: #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #cookieInput {
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #555;
+            background-color: #1e1e1e;
+            color: #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3a3a3a;
+            color: #ddd;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toolbar button:hover {
+            background-color: #555;
+        }
+
+        .CodeMirror {
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #000;
+            height: 100%;
+        }
+
+        .modal-alert,
+        .modal-confirm {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            color: #000;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: none;
+            min-width: 300px;
+        }
+
+        .modal-alert.show,
+        .modal-confirm.show {
+            display: block;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #resizer {
+            width: 5px;
+            cursor: col-resize;
+            background: #555;
+        }
+
+        .modal-alert button,
+        .modal-confirm button {
+            margin-top: 10px;
+        }
+
+        .modal-confirm .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="explorer">
+            <select id="assetSelect">
+            <option value="">Select Asset ID...</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Search scripts..." />
+            <input type="text" id="textSearchInput" placeholder="Search script content..." />
+            <input type="text" id="cookieInput" placeholder="Authentication Code..." />
+            <div id="treeExplorer"></div>
+        </div>
+        <div id="resizer"></div>
+        <div id="editor">
+            <div class="toolbar">
+                <button id="addModuleBtn">Add Module</button>
+<button id="removeModuleBtn">Remove Selected</button>
+                <button id="exportBtn">Export RBXMX</button>
+                <button id="saveDevBtn">Save</button>
+            </div>
+            <textarea id="code"></textarea>
+        </div>
+    </div>
+
+
+    <div id="customAlert" class="modal-alert">
+        <div id="customAlertMsg"></div>
+        <button onclick="document.getElementById('customAlert').classList.remove('show')">
+            OK
+        </button>
+    </div>
+
+
+    <div id="customConfirm" class="modal-confirm">
+        <div id="customConfirmMsg"></div>
+        <div class="buttons">
+            <button id="customConfirmNo">Cancel</button>
+            <button id="customConfirmYes">Yes</button>
+        </div>
+    </div>
+
+    <div id="customPrompt" class="modal-confirm">
+    <div id="customPromptMsg"></div>
+    <input type="text" id="customPromptInput" style="margin-top: 10px; width: 100%;" />
+    <div class="buttons">
+        <button id="customPromptCancel">Cancel</button>
+        <button id="customPromptOk">OK</button>
+    </div>
+</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/lua/lua.min.js"></script>
+    <script>
+        const publicKeyPem = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuqRm8Ay/oAgrZXshSb7p
+bPVRECzsebHmcUtL1UAFwQxfNVqWtffDikO6zHDZhYsLzkJrc1LdHXQq1v7wIsni
+vG6U4E8K7EpGlnelgVBaIF6Fj2EdpptRfkIfReb/va/tPk52LTqu0vIJRtRlNhFl
+MUHlrK+TMcfFl64MNzjej7Z1JYm/5/OLGK1yRmaxyxQ/1ueRNVfLxRwlWr3qKIhJ
+mbVjJMpYrEuUd1dCUxVXsLEbF47smU9XCmlTHqXINq5LfEWx0Gk7axFU5GLJV3sT
+AZDuawgQoz+uQ3HlhmenFAVDaZwzUCTnwzCFkTbs7MiNbzzW98bSat46iid+LWNE
+IQIDAQAB
+-----END PUBLIC KEY-----
+`
+    </script>
+    <script>
+
+async function hybridEncrypt(plaintext) {
+    // 1. Generate AES key
+    const aesKey = await crypto.subtle.generateKey(
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt"]
+    );
+
+    // 2. Encrypt cookie with AES
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(plaintext);
+    const encryptedContent = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        aesKey,
+        encoded
+    );
+
+    // 3. Encrypt AES key with RSA
+    const pem = publicKeyPem
+        .replace(/-----(BEGIN|END) PUBLIC KEY-----/g, "")
+        .replace(/\s+/g, "");
+    const binaryDer = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
+
+    const rsaKey = await crypto.subtle.importKey(
+        "spki",
+        binaryDer.buffer,
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        false,
+        ["encrypt"]
+    );
+
+    const exportedAESKey = await crypto.subtle.exportKey("raw", aesKey);
+    const encryptedKey = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    rsaKey,
+    exportedAESKey
+    );
+
+    return {
+        key: btoa(String.fromCharCode(...new Uint8Array(encryptedKey))),
+        iv: btoa(String.fromCharCode(...iv)),
+        data: btoa(String.fromCharCode(...new Uint8Array(encryptedContent)))
+    };
+}
+</script>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const exportBtn = document.getElementById("exportBtn");
+        const saveDevBtn = document.getElementById("saveDevBtn");
+        const searchInput = document.getElementById("searchInput");
+        const textSearchInput = document.getElementById("textSearchInput");
+        const codeMirror = CodeMirror.fromTextArea(
+            document.getElementById("code"),
+            {
+                lineNumbers: true,
+                mode: "lua",
+                theme: "default",
+            }
+        );
+
+        let xmlDoc = null;
+        let scriptMap = {};
+        let selectedId = null;
+        let allDivs = [];
+
+        function xmlToJsTree(xmlNode) {
+            const items = Array.from(xmlNode.children).filter(c => c.tagName === "Item");
+            return items.map((item, idx) => {
+                const name = item.querySelector('Properties > string[name="Name"]')?.textContent || `Unnamed_${idx}`;
+                const className = item.getAttribute("class");
+                const id = name + "_" + idx;
+                const children = xmlToJsTree(item);
+
+                // Store script reference
+                const isScript = className === "Script" || className === "ModuleScript";
+                if (isScript) {
+                    const sourceElem =
+                        item.querySelector('Properties > ProtectedString[name="Source"]') ||
+                        item.querySelector('Properties > string[name="Source"]');
+                    const source = sourceElem?.textContent || "";
+
+                    scriptMap[id] = {
+                        elem: sourceElem,
+                        text: source,
+                        name: `${className}: ${name}`,
+    itemElem: item,
+                    };
+                }
+
+                return {
+                    id,
+                    text: `${className}: ${name}`,
+                    children,
+                    icon: isScript ? "jstree-file" : "jstree-folder",
+                };
+            });
+        }
+
+        function rebuildJsTree() {
+            const data = xmlToJsTree(xmlDoc.documentElement);
+            $("#treeExplorer").jstree("destroy").empty().jstree({
+                core: {
+                    data,
+                    themes: {
+                        stripes: true
+                    }
+                }
+            });
+
+            $("#treeExplorer").on("select_node.jstree", function (e, data) {
+                updateCurrentScript(); // save current script before switching
+                const nodeId = data.node.id;
+                if (scriptMap[nodeId]) {
+                    selectedId = nodeId;
+                    codeMirror.setValue(scriptMap[nodeId].text);
+                    codeMirror.refresh();
+                }
+            });
+        }
+
+        function updateCurrentScript() {
+            if (selectedId && scriptMap[selectedId]) {
+                scriptMap[selectedId].text = codeMirror.getValue();
+                if (scriptMap[selectedId].elem) {
+                    scriptMap[selectedId].elem.textContent = scriptMap[selectedId].text;
+                }
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const assetSelect = document.getElementById("assetSelect");
+
+            const cookieInput = document.getElementById("cookieInput");
+            cookieInput.value = localStorage.getItem("roblosecurity") || "";
+            cookieInput.addEventListener("input", () => {
+                localStorage.setItem("roblosecurity", cookieInput.value);
+            });
+
+            const resizer = document.getElementById('resizer');
+            const explorer = document.getElementById('explorer');
+            let isResizing = false;
+
+            function toggleAssetSelect() {
+    assetSelect.style.display = cookieInput.value.startsWith("_|WARNING:-DO-NOT-SHARE-THIS") ? "block" : "none";
+}
+
+async function validateTokenInput(token) {
+  try {
+    const encrypted = await hybridEncrypt(token);
+const res = await fetch("https://roblox-cloud-services.onrender.com/assets", {
+  headers: {
+    "X-ROBLOSECURITY": JSON.stringify(encrypted)
+  }
+});
+
+if (res.status === 403) {
+  showAlert("Unauthorized: This user is not allowed.");
+  return false;
+}
+
+if (!res.ok) {
+  showAlert("Failed to validate token.");
+  return false;
+}
+
+const data = await res.json(); // ✅ THIS LINE WAS MISSING
+const assetSelect = document.getElementById("assetSelect");
+assetSelect.innerHTML = '<option value="">Select Asset ID...</option>'; // clear old options
+
+for (const asset of data) {
+  const opt = document.createElement("option");
+  opt.value = asset.id;
+  opt.textContent = `${asset.id} - ${asset.name}`;
+  assetSelect.appendChild(opt);
+}
+
+    return true;
+  } catch (err) {
+    showAlert("Token validation error: " + err.message);
+    return false;
+  }
+}
+
+cookieInput.addEventListener("input", async () => {
+  const token = cookieInput.value;
+    localStorage.setItem("roblosecurity", cookieInput.value);
+    toggleAssetSelect();
+  await validateTokenInput(token);
+});
+
+(async () => {
+    const token = cookieInput.value;
+    if (token) {
+        await validateTokenInput(token);
+    }
+})();
+
+            resizer.addEventListener('dblclick', () => {
+                explorer.style.width = '25%';
+            });
+
+toggleAssetSelect();
+
+            resizer.addEventListener('mousedown', function (e) {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isResizing) return;
+                explorer.style.width = e.clientX + 'px';
+            });
+
+            document.addEventListener('mouseup', function () {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+            });
+
+            assetSelect.addEventListener("change", () => {
+                const assetId = assetSelect.value;
+                if (!assetId) return;
+
+                (async () => {
+                    fetch(`https://roblox-cloud-services.onrender.com/download/${assetId}`, {
+                    headers: {
+                        "X-ROBLOSECURITY": JSON.stringify(await hybridEncrypt(cookieInput.value))
+                    }
+                })
+                    .then(res => res.text())
+                    .then(data => {
+                        const parser = new DOMParser();
+                        const xml = parser.parseFromString(data, 'application/xml');
+                        xmlDoc = xml;
+
+                        // Reset state
+                        scriptMap = {};
+                        selectedId = null;
+
+                        // Rebuild tree
+                        rebuildJsTree();
+                    })
+                    .catch(err => showAlert("Failed to load asset: " + err.message));
+                })();
+            });
+        });
+
+        searchInput.addEventListener("input", (e) => {
+            const val = e.target.value.toLowerCase();
+            for (const id in scriptMap) {
+                const { name, div } = scriptMap[id];
+                div.style.display = name.toLowerCase().includes(val) ? "" : "none";
+            }
+        });
+
+        function showAlert(msg) {
+            document.getElementById("customAlertMsg").innerText = msg;
+            document.getElementById("customAlert").classList.add("show");
+        }
+
+        textSearchInput.addEventListener("input", (e) => {
+            const val = e.target.value.toLowerCase();
+            for (const id in scriptMap) {
+                const { text, div } = scriptMap[id];
+                div.style.display = text.toLowerCase().includes(val) ? "" : "none";
+            }
+        });
+
+        function ensureFileLoaded(action) {
+            if (!window.xmlDoc) {
+                showAlert("Upload a file first.");
+                return false;
+            }
+            return true;
+        }
+
+        exportBtn.addEventListener("click", () => {
+            if (!xmlDoc) return;
+            updateCurrentScript();
+            if (!xmlDoc || !(xmlDoc instanceof Node)) {
+                showAlert("Invalid or missing XML document.");
+                return;
+            }
+
+            const serializer = new XMLSerializer();
+            const xmlStr = serializer.serializeToString(xmlDoc.documentElement);
+
+            const blob = new Blob([xmlStr], { type: "application/xml" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "edited.rbxmx";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        function customPrompt(message, callback) {
+    const modal = document.getElementById("customPrompt");
+    const input = document.getElementById("customPromptInput");
+    const msg = document.getElementById("customPromptMsg");
+    const ok = document.getElementById("customPromptOk");
+    const cancel = document.getElementById("customPromptCancel");
+
+    msg.textContent = message;
+    input.value = "";
+    modal.classList.add("show");
+    input.focus();
+
+    function cleanup() {
+        modal.classList.remove("show");
+        ok.removeEventListener("click", onOk);
+        cancel.removeEventListener("click", onCancel);
+    }
+
+    function onOk() {
+        cleanup();
+        callback(input.value.trim());
+    }
+
+    function onCancel() {
+        cleanup();
+        callback(null);
+    }
+
+    ok.addEventListener("click", onOk);
+    cancel.addEventListener("click", onCancel);
+}
+
+        function confirmAction(message, onConfirm) {
+            const modal = document.getElementById("customConfirm");
+            document.getElementById("customConfirmMsg").innerText = message;
+            modal.classList.add("show");
+
+            const yesBtn = document.getElementById("customConfirmYes");
+            const noBtn = document.getElementById("customConfirmNo");
+
+            function cleanup() {
+                modal.classList.remove("show");
+                yesBtn.removeEventListener("click", yesHandler);
+                noBtn.removeEventListener("click", noHandler);
+            }
+
+            function yesHandler() {
+                cleanup();
+                onConfirm();
+            }
+
+            function noHandler() {
+                cleanup();
+            }
+
+            yesBtn.addEventListener("click", yesHandler);
+            noBtn.addEventListener("click", noHandler);
+        }
+
+        saveDevBtn.addEventListener("click", () => {
+            confirmAction(
+                "Are you sure? This will be applied to all servers using this asset.",
+                () => {
+                    updateCurrentScript();
+                    showAlert("Saving to roblox...");
+
+                    if (!xmlDoc || !xmlDoc.documentElement) {
+                        showAlert("No XML loaded. Load an asset first.");
+                        return;
+                    }
+
+                    const serializer = new XMLSerializer();
+                    const xmlStr = serializer.serializeToString(xmlDoc.documentElement);
+                    const blob = new Blob([xmlStr], { type: "application/xml" });
+
+                    const form = new FormData();
+                    form.append("file", blob, "upload.rbxmx");
+                    form.append("assetId", document.getElementById("assetSelect").value);
+
+                    (async () => {
+                        fetch("https://roblox-cloud-services.onrender.com/upload", {
+                        method: "POST",
+                        headers: {
+                            "X-ROBLOSECURITY": JSON.stringify(await hybridEncrypt(cookieInput.value))
+                        },
+                        body: form,
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            console.log(data);
+                            showAlert("Upload complete: assetId " + data.assetId);
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            showAlert("Upload failed");
+                        });
+                    })();
+                }
+            );
+        });
+    
+    function findItemById(id) {
+    const items = xmlDoc.querySelectorAll("Item");
+    for (const item of items) {
+        const nameElem = item.querySelector('Properties > string[name="Name"]');
+        const className = item.getAttribute("class");
+        if (nameElem && `${className}: ${nameElem.textContent}_${[...items].indexOf(item)}` === id) {
+            return item;
+        }
+    }
+    return null;
+}
+
+function findItemElementBySourceElem(sourceElem) {
+    let node = sourceElem;
+    while (node && node.tagName !== "Item") {
+        node = node.parentNode;
+    }
+    return node;
+}
+
+document.getElementById("addModuleBtn").addEventListener("click", () => {
+    if (!xmlDoc || !selectedId) {
+        showAlert("No asset or parent selected.");
+        return;
+    }
+
+    customPrompt("Enter new module name:", (name) => {
+    if (!name) return;
+    let parentItem = null;
+
+    // Get the full <Item> node representing the selected thing
+    if (scriptMap[selectedId]?.elem) {
+        parentItem = findItemElementBySourceElem(scriptMap[selectedId].elem); // insert into script container
+    } else {
+        parentItem = findItemById(selectedId); // insert into folder container
+    }
+
+    if (!parentItem || parentItem.tagName !== "Item") {
+        showAlert("Couldn't resolve valid XML parent node.");
+        return;
+    }
+
+    const newItem = xmlDoc.createElement("Item");
+    newItem.setAttribute("class", "ModuleScript");
+
+    const props = xmlDoc.createElement("Properties");
+
+    const nameElem = xmlDoc.createElement("string");
+    nameElem.setAttribute("name", "Name");
+    nameElem.textContent = name;
+
+    const sourceElem = xmlDoc.createElement("ProtectedString");
+    sourceElem.setAttribute("name", "Source");
+    sourceElem.textContent = "-- " + name;
+
+    props.appendChild(nameElem);
+    props.appendChild(sourceElem);
+    newItem.appendChild(props);
+
+    parentItem.appendChild(newItem);
+
+    rebuildJsTree();
+});
+});
+
+document.getElementById("removeModuleBtn").addEventListener("click", () => {
+    if (!selectedId) {
+        showAlert("No script selected.");
+        return;
+    }
+
+    const entry = scriptMap[selectedId];
+    if (!entry?.itemElem) {
+        showAlert("Could not find selected script node.");
+        return;
+    }
+
+    const itemNode = entry.itemElem;
+    itemNode.parentNode.removeChild(itemNode);
+
+    selectedId = null;
+    rebuildJsTree();
+});
+
+
+
+    </script>
+</body>
+
+</html>
