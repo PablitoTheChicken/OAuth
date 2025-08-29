@@ -96,7 +96,7 @@ router.get("/download/:assetId", async (req, res) => {
 
     // Convert to RBXMX
     await new Promise((resolve, reject) => {
-    execFile("/OAuth/rbxmk", [
+    execFile("rbxmk", [
       "run",
       "--allow-insecure-paths",
       "convert.lua",
