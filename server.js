@@ -4,6 +4,7 @@ const https = require('https');
 const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
+const apiRoutes = require('./api');
 
 // TLS certs
 const privateKey = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/privkey.pem', 'utf8');
@@ -36,7 +37,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
-app.use('/', require('./apiRoutes'));
+app.use('/', apiRoutes);
 
 // Start HTTPS server
 const PORT = 443;
