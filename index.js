@@ -36,6 +36,6 @@ app.use('/', require('./apiRoutes'));
 
 // Start HTTPS server
 const PORT = 443;
-https.createServer(credentials, app).listen(PORT, () => {
-  console.log(`✅ HTTPS server running at https://cahoots.gg`);
+https.createServer(app).listen(PORT, () => {
+  console.log(`✅ HTTPS server running at https://api.forreal.games`);
 });
