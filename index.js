@@ -6,15 +6,19 @@ const cors = require('cors');
 const path = require('path');
 
 // TLS certs
-const privateKey  = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/privkey.pem', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/privkey.pem', 'utf8');
 const certificate = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/fullchain.pem', 'utf8');
 const credentials = { key: privateKey, cert: certificate };
 
 // Express app
 const app = express();
 app.use(cors({
-  origin: 'https://dashboard.forreal.games',
-  credentials: true
+  origin: ['https://dashboard.forreal.games', 'https://forreal.games'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200 // for legacy browser support
 }));
 app.use(express.json());
 app.set('trust proxy', 1); // if behind a reverse proxy (like Vercel, Heroku, or Lovable)
