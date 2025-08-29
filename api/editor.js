@@ -151,7 +151,7 @@ router.get("/assets", async (req, res) => {
 });
 
 router.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "editor", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "public", "editor", "index.html"));
 });
 
 router.post("/upload", upload.single("file"), async (req, res) => {
