@@ -6,8 +6,8 @@ const cors = require('cors');
 const path = require('path');
 
 // TLS certs
-const privateKey  = fs.readFileSync('/etc/letsencrypt/live/cahoots.gg/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/cahoots.gg/fullchain.pem', 'utf8');
+const privateKey  = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/api.forreal.games/fullchain.pem', 'utf8');
 const credentials = { key: privateKey, cert: certificate };
 
 // Express app
@@ -36,6 +36,6 @@ app.use('/', require('./apiRoutes'));
 
 // Start HTTPS server
 const PORT = 443;
-https.createServer(app).listen(PORT, () => {
+https.createServer(credentials, app).listen(PORT, () => {
   console.log(`✅ HTTPS server running at https://api.forreal.games`);
 });
