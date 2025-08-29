@@ -99,7 +99,7 @@ router.get("/download/:assetId", async (req, res) => {
       execFile("/OAuth/rbxmk", [
         "run",
         "--allow-insecure-paths",
-        "/OAuth/convert.lua",
+        "/convert.lua",
         inputFile,
         outputFile
       ], (err, stdout, stderr) => {
