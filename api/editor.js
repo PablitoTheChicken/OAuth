@@ -102,7 +102,7 @@ router.get("/download/:assetId", async (req, res) => {
       "convert.lua",
       inputFile,
       outputFile
-    ], { cwd: "/OAuth" }, (err, stdout, stderr) => {
+    ], (err, stdout, stderr) => {
         console.log("rbxmk stdout:", stdout);
         console.error("rbxmk stderr:", stderr);
         if (err) return reject(err);
