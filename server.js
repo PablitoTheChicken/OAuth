@@ -33,9 +33,6 @@ app.use(session({
   }
 }));
 
-// Static dashboard
-app.use(express.static(path.join(__dirname, '../public')));
-
 // API routes
 app.use('/', apiRoutes);
 
