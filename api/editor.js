@@ -5,13 +5,15 @@ const { execFile } = require("child_process");
 const noblox = require("noblox.js");
 const express = require("express");
 const path = require("path");
+const multer = require("multer");
 
+const upload = multer({ dest: "uploads/" }); // temporary upload folder
 const router = express.Router();
 
 const ALLOWED_USER_IDS = [764674203, 726882757, 127757949, 285095062, 155441001, 7041083189];
 
 // public folder
-//router.use(express.static(path.join(__dirname, "public", "editor")));
+router.use(express.static(path.join(__dirname, "public", "editor")));
 
 const GROUP_ID = 976297917;
 
