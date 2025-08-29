@@ -96,7 +96,7 @@ router.get("/download/:assetId", async (req, res) => {
 
     // Convert to RBXMX
     await new Promise((resolve, reject) => {
-      const rbxmkPath = path.join(__dirname, "..", "..", "rbxmk");
+      const rbxmkPath = path.join(__dirname, "..", "rbxmk");
 execFile(rbxmkPath, [
   "run",
   "--allow-insecure-paths",
