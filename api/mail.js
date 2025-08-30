@@ -38,7 +38,7 @@ router.post("/submit", async (req, res) => {
 
   try {
     await transporter.sendMail({
-      from: `"ForReal Business Contact Form" <joram@kleiberg.net>`, // must be your ProtonMail
+      from: `"ForReal Contact Form" <joram@kleiberg.net>`,
       replyTo: email,
       to: "joram@kleiberg.net",
       subject: `[Contact Form] ${subject}`,
