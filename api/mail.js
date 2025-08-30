@@ -17,9 +17,13 @@ const transporter = nodemailer.createTransport({
 router.post("/submit", async (req, res) => {
   const { name, company, email, subject, message } = req.body;
 
+  console.log("Received contact form submission:", req.body);
+
   if (!name || !email || !subject || !message) {
     return res.status(400).json({ error: "Missing required fields" });
   }
+
+  console.log("Sending email...");
 
   try {
     await transporter.sendMail({
