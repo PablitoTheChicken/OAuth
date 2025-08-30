@@ -28,7 +28,7 @@ router.post("/submit", async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"${name}" <${email}>`,
-      to: process.env.SMTP_USER, // Your ProtonMail inbox
+      to: "joram@kleiberg.net", // Your ProtonMail inbox
       subject: `[Contact Form] ${subject}`,
       html: `
         <p><strong>Name:</strong> ${name}</p>
