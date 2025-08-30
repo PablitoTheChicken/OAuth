@@ -6,8 +6,8 @@ const router = express.Router();
 
 const transporter = nodemailer.createTransport({
   host: "smtp.protonmail.ch",
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: "joram@kleiberg.net",
     pass: "NKNAK718MWLWV9YH"
