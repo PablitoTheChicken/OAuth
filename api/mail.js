@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.post("/submit", async (req, res) => {
+router.post("/submit", async (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
