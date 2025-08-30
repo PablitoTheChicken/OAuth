@@ -1,7 +1,23 @@
 const express = require('express');
 const axios = require('axios');
 
+const Pool = require('../modules/db');
+
 const router = express.Router();
+
+router.post('/join/:userId', async (req, res) => {
+    const { name } = req.body;
+  try {
+    const result = await Pool.query(
+      'INSERT INTO users (name) VALUES ($1) RETURNING *',
+      [name]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
