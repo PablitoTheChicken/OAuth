@@ -7,10 +7,13 @@ const router = express.Router();
 const transporter = nodemailer.createTransport({
   host: "smtp.protonmail.ch",
   port: 587,
-  secure: false,
+  secure: true,
   auth: {
     user: "joram@kleiberg.net",
     pass: "NKNAK718MWLWV9YH"
+  },
+  tls: {
+    rejectUnauthorized: false // <-- helpful if cert issues
   }
 });
 
@@ -28,7 +31,7 @@ router.post("/submit", async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"${name}" <${email}>`,
-      to: "joram@kleiberg.net", // Your ProtonMail inbox
+      to: "joram@kleiberg.net",
       subject: `[Contact Form] ${subject}`,
       html: `
         <p><strong>Name:</strong> ${name}</p>
