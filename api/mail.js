@@ -28,6 +28,14 @@ router.post("/submit", async (req, res) => {
 
   console.log("Sending email...");
 
+  transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP connection error:", error);
+  } else {
+    console.log("SMTP server is ready to send messages");
+  }
+});
+
   try {
     await transporter.sendMail({
       from: `"${name}" <${email}>`,
