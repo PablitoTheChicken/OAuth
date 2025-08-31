@@ -14,7 +14,7 @@ const credentials = { key: privateKey, cert: certificate };
 // Express app
 const app = express();
 app.use(cors({
-  origin: ['https://dashboard.forreal.games', 'https://forreal.games', "https://*.forreal.games", "https://forreal-games.lovable.app/"],
+  origin: ['https://dashboard.forreal.games', 'https://forreal.games', "https://*.forreal.games", "https://preview--forreal-games.lovable.app/", "https://forreal-games.lovable.app/"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
