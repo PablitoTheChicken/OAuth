@@ -53,10 +53,10 @@ router.get('/callback', async (req, res) => {
     req.session.refreshToken = refresh_token;
     req.session.user = userInfoRes.data;
 
-    res.json({
-      user: userInfoRes.data,
-      tokens: { access_token, refresh_token, id_token, expires_in, token_type, scope }
-    });
+      const redirectUrl = new URL('https://dashboard.forreal.games/auth/callback');
+  redirectUrl.searchParams.set('roblox_data', encodeURIComponent(JSON.stringify(userInfoRes.data)));
+  
+  res.redirect(redirectUrl.toString());
   } catch (err) {
     console.error('Token exchange error:', err.response?.data || err.message);
     res.status(500).json({ error: 'Failed to retrieve tokens' });
